@@ -18,7 +18,7 @@ app.add_middleware(
 
 app.include_router(employees.router)
 app.include_router(attendance.router)
-
+app.include_router(payments.router)
 
 @app.get("/")
 def root():
