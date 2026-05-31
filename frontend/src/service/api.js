@@ -7,3 +7,5 @@ const API = axios.create({
 export const getEmployees = () => API.get('/employees/')
 export const createEmployee = (data) => API.post('/employees/', data)
 export const deleteEmployee = (id) => API.delete(`/employees/${id}`)
+export const getAttendance = () => API.get('/attendance/')
+export const createAttendance = (data) => API.post('/attendance/', data)

@@ -1,0 +1,20 @@
+.staff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.form-wrapper {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  margin-top: 0.8rem;
+}
+
+.staff-table-wrapper {
+  margin-top: 0.5rem;
+}
