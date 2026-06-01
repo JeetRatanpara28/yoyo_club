@@ -1,0 +1,44 @@
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.ticket-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.ticket-card h3 {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.ticket-card p {
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 0.3rem;
+}
+
+.ticket-progress {
+  height: 6px;
+  background: #eee;
+  margin: 0.5rem 0;
+}
+
+.ticket-progress-bar {
+  height: 6px;
+  background: #222;
+}
+
+.ticket-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  align-items: center;
+}
+
+.ticket-actions input {
+  width: 60px;
+}

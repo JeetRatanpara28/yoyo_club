@@ -1,0 +1,80 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f9f9f9;
+}
+
+.login-box {
+  border: 1px solid #ccc;
+  padding: 2rem;
+  width: 340px;
+  background: #fff;
+}
+
+.login-box h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.login-box .form-group {
+  margin-bottom: 1rem;
+}
+
+.login-box .form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.login-box .form-group input {
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: #222;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  text-align: center;
+  margin: 1rem 0;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.google-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.error-msg {
+  color: #c62828;
+  font-size: 0.82rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.switch-text {
+  text-align: center;
+  font-size: 0.82rem;
+  margin-top: 1rem;
+  color: #555;
+}
+
+.switch-text span {
+  color: #222;
+  cursor: pointer;
+  text-decoration: underline;
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getEmployees, getAttendance, createAttendance } from '../services/api'
+import { getEmployees, getAttendance, createAttendance } from '../service/api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import '../styles/dashboard.css'
 

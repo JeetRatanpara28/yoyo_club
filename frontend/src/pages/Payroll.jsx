@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getEmployees, createCheckoutSession } from '../services/api'
+import { getEmployees, createCheckoutSession } from '../service/api'
 import '../styles/payroll.css'
 
 function Payroll() {

@@ -16,6 +16,21 @@ def create_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
+
+    # reset attendance for that day
+    from datetime import datetime
+    date_obj = datetime.strptime(ticket.event_date, "%Y-%m-%d")
+    day_name = date_obj.strftime("%a")
+
+    attendance = db.query(models.Attendance).filter(models.Attendance.day == day_name).first()
+    if attendance:
+        attendance.count = 0
+        db.commit()
+    else:
+        new_attendance = models.Attendance(day=day_name, count=0)
+        db.add(new_attendance)
+        db.commit()
+
     return db_ticket
 
 @router.post("/{ticket_id}/sell", response_model=schemas.TicketOut)

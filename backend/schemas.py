@@ -38,3 +38,23 @@ class TicketOut(TicketCreate):
 
 class TicketSell(BaseModel):
     quantity: int
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

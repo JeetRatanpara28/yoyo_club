@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getEmployees, createEmployee, deleteEmployee } from '../services/api'
+import { getEmployees, createEmployee, deleteEmployee } from '../service/api'
 import '../styles/staff.css'
 
 function Staff() {
