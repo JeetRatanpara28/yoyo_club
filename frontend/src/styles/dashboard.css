@@ -1,7 +1,7 @@
 .stats-grid {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat-card {
@@ -24,7 +24,19 @@
 .chart-card {
   border: 1px solid #ccc;
   padding: 0.8rem;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.chart-card h3 {
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .hours-table-card {
@@ -32,11 +44,9 @@
   padding: 0.8rem;
 }
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
+.hours-table-card h3 {
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
 }
 
 .att-form {

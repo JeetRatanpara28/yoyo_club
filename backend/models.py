@@ -36,3 +36,13 @@ class User(Base):
     hashed_password = Column(String, nullable=True)
     google_id = Column(String, nullable=True)
     name = Column(String, nullable=True)
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    employee_name = Column(String, nullable=False)
+    employee_role = Column(String, nullable=False)
+    contract = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    paid_at = Column(String, nullable=False)

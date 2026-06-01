@@ -58,3 +58,13 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class PaymentOut(BaseModel):
+    id: int
+    employee_name: str
+    employee_role: str
+    contract: str
+    amount: float
+    paid_at: str
+    class Config:
+        from_attributes = True

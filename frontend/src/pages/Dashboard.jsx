@@ -172,7 +172,7 @@ function Dashboard() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="pay" fill="#635bff" />
+                <Bar dataKey="pay" fill="#555" />
               </BarChart>
             </ResponsiveContainer>
           )}
