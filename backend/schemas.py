@@ -23,3 +23,18 @@ class AttendanceOut(BaseModel):
 class AttendanceCreate(BaseModel):
     day: str
     count: int
+
+class TicketCreate(BaseModel):
+    event_name: str
+    event_date: str
+    price: float
+    total_tickets: int
+    sold_tickets: Optional[int] = 0
+
+class TicketOut(TicketCreate):
+    id: int
+    class Config:
+        from_attributes = True
+
+class TicketSell(BaseModel):
+    quantity: int

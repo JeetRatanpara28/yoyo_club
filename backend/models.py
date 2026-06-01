@@ -17,3 +17,13 @@ class Attendance(Base):
     id = Column(Integer, primary_key=True, index=True)
     day = Column(String, nullable=False)
     count = Column(Integer, default=0)
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_name = Column(String, nullable=False)
+    event_date = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    total_tickets = Column(Integer, nullable=False)
+    sold_tickets = Column(Integer, default=0)
