@@ -1,0 +1,43 @@
+.payroll-stats-grid {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.rules-card {
+  border: 1px solid #ccc;
+  padding: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.rule-item {
+  border: 1px solid #ddd;
+  padding: 0.6rem;
+  background: #fafafa;
+}
+
+.rule-item p:first-child {
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.rule-item p:last-child {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.payroll-table-wrapper {
+  margin-top: 0.5rem;
+}
+
+tfoot td {
+  font-weight: bold;
+  background: #f0f0f0;
+}
