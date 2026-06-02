@@ -17,17 +17,15 @@ def create_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_ticket)
 
-    # reset attendance for that day
-    from datetime import datetime
     date_obj = datetime.strptime(ticket.event_date, "%Y-%m-%d")
     day_name = date_obj.strftime("%a")
 
-    attendance = db.query(models.Attendance).filter(models.Attendance.day == day_name).first()
+    attendance = db.query(models.Attendance).filter(models.Attendance.date == ticket.event_date).first()
     if attendance:
         attendance.count = 0
         db.commit()
     else:
-        new_attendance = models.Attendance(day=day_name, count=0)
+        new_attendance = models.Attendance(day=day_name, count=0, date=ticket.event_date)
         db.add(new_attendance)
         db.commit()
 
@@ -48,12 +46,12 @@ def sell_tickets(ticket_id: int, data: schemas.TicketSell, db: Session = Depends
     date_obj = datetime.strptime(ticket.event_date, "%Y-%m-%d")
     day_name = date_obj.strftime("%a")
 
-    attendance = db.query(models.Attendance).filter(models.Attendance.day == day_name).first()
+    attendance = db.query(models.Attendance).filter(models.Attendance.date == ticket.event_date).first()
     if attendance:
         attendance.count += data.quantity
         db.commit()
     else:
-        new_attendance = models.Attendance(day=day_name, count=data.quantity)
+        new_attendance = models.Attendance(day=day_name, count=data.quantity, date=ticket.event_date)
         db.add(new_attendance)
         db.commit()
 

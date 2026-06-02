@@ -13,16 +13,18 @@ class EmployeeOut(EmployeeCreate):
     class Config:
         from_attributes = True
 
+class AttendanceCreate(BaseModel):
+    day: str
+    count: int
+    date: Optional[str] = None
+
 class AttendanceOut(BaseModel):
     id: int
     day: str
     count: int
+    date: Optional[str] = None
     class Config:
         from_attributes = True
-
-class AttendanceCreate(BaseModel):
-    day: str
-    count: int
 
 class TicketCreate(BaseModel):
     event_name: str

@@ -17,6 +17,7 @@ class Attendance(Base):
     id = Column(Integer, primary_key=True, index=True)
     day = Column(String, nullable=False)
     count = Column(Integer, default=0)
+    date = Column(String, nullable=True)
 
 class Ticket(Base):
     __tablename__ = "tickets"
