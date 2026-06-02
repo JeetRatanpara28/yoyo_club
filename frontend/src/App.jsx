@@ -5,10 +5,22 @@ import Staff from './pages/Staff'
 import Payroll from './pages/Payroll'
 import Tickets from './pages/Tickets'
 import Login from './pages/Login'
+import EmployeeDashboard from './pages/EmployeeDashboard'
 
-const PrivateRoute = ({ children }) => {
+const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/login" />
+  const role = localStorage.getItem('role')
+  if (!token) return <Navigate to="/login" />
+  if (role !== 'admin') return <Navigate to="/employee" />
+  return children
+}
+
+const EmployeeRoute = ({ children }) => {
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
+  if (!token) return <Navigate to="/login" />
+  if (role === 'admin') return <Navigate to="/" />
+  return children
 }
 
 function App() {
@@ -16,8 +28,13 @@ function App() {
     <div>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/employee" element={
+          <EmployeeRoute>
+            <EmployeeDashboard />
+          </EmployeeRoute>
+        } />
         <Route path="/*" element={
-          <PrivateRoute>
+          <AdminRoute>
             <Navbar />
             <div style={{ padding: '1.2rem 1.5rem' }}>
               <Routes>
@@ -27,7 +44,7 @@ function App() {
                 <Route path="/tickets" element={<Tickets />} />
               </Routes>
             </div>
-          </PrivateRoute>
+          </AdminRoute>
         } />
       </Routes>
     </div>

@@ -5,20 +5,29 @@ import {
   deleteEmployee,
   updateEmployee,
   createCheckoutSession,
-} from "../service/api";
+  registerUser,
+  getAllClockSummary,
+  getPayments,
+  forceClockOut,
+  resetTodayHours
+} from '../service/api'
 import "../styles/staff.css";
 
 function Staff() {
   const [employees, setEmployees] = useState([]);
+  const [clockSummary, setClockSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [payments, setPayments] = useState([]);
   const [form, setForm] = useState({
     name: "",
     role: "Bartender",
     contract: "full-time",
     hourly_rate: "",
     hours_worked: "",
+    email: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -27,8 +36,14 @@ function Staff() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await getEmployees();
-      setEmployees(res.data);
+      const [empRes, summaryRes, payRes] = await Promise.all([
+        getEmployees(),
+        getAllClockSummary(),
+        getPayments(),
+      ]);
+      setEmployees(empRes.data);
+      setClockSummary(summaryRes.data);
+      setPayments(payRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -36,24 +51,60 @@ function Staff() {
     }
   };
 
+  const getRealHours = (name) => {
+    const found = clockSummary.find(
+      (s) => s.employee_name.toLowerCase() === name.toLowerCase(),
+    );
+    return found ? found.total_hours : 0;
+  };
+
+  const getRealPay = (emp) => {
+    const hours = getRealHours(emp.name);
+    const base = hours * emp.hourly_rate;
+    if (emp.contract === "full-time") return (base * 1.1).toFixed(2);
+    if (emp.contract === "part-time") return base.toFixed(2);
+    if (emp.contract === "freelance") return (base * 0.8).toFixed(2);
+    return base.toFixed(2);
+  };
+
   const handleAdd = async () => {
-    if (!form.name || !form.hourly_rate || !form.hours_worked) {
+    if (
+      !editingId &&
+      (!form.name ||
+        !form.hourly_rate ||
+        !form.hours_worked ||
+        !form.email ||
+        !form.password)
+    ) {
+      alert("Please fill in all fields");
+      return;
+    }
+    if (editingId && (!form.name || !form.hourly_rate || !form.hours_worked)) {
       alert("Please fill in all fields");
       return;
     }
     try {
       if (editingId) {
         await updateEmployee(editingId, {
-          ...form,
+          name: form.name,
+          role: form.role,
+          contract: form.contract,
           hourly_rate: parseFloat(form.hourly_rate),
           hours_worked: parseFloat(form.hours_worked),
         });
         setEditingId(null);
       } else {
         await createEmployee({
-          ...form,
+          name: form.name,
+          role: form.role,
+          contract: form.contract,
           hourly_rate: parseFloat(form.hourly_rate),
           hours_worked: parseFloat(form.hours_worked),
+        });
+        await registerUser({
+          email: form.email,
+          password: form.password,
+          name: form.name,
         });
       }
       setForm({
@@ -62,11 +113,13 @@ function Staff() {
         contract: "full-time",
         hourly_rate: "",
         hours_worked: "",
+        email: "",
+        password: "",
       });
       setShowForm(false);
       fetchEmployees();
     } catch (err) {
-      console.error(err);
+      alert(err.response?.data?.detail || "Error creating employee");
     }
   };
 
@@ -91,29 +144,79 @@ function Staff() {
       contract: emp.contract,
       hourly_rate: emp.hourly_rate,
       hours_worked: emp.hours_worked,
+      email: "",
+      password: "",
     });
     setShowForm(true);
   };
 
   const handlePay = async (emp) => {
-    const calculatePay = (e) => {
-      const base = e.hourly_rate * e.hours_worked;
-      if (e.contract === "full-time") return base * 1.1;
-      if (e.contract === "part-time") return base;
-      if (e.contract === "freelance") return base * 0.8;
-      return base;
-    };
+    const realPay = parseFloat(getRealPay(emp));
+    if (realPay === 0) {
+      alert("No clock-in hours recorded for this employee yet");
+      return;
+    }
+
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    const alreadyPaidThisWeek = payments.find((p) => {
+      if (p.employee_name.toLowerCase() !== emp.name.toLowerCase())
+        return false;
+      const parts = p.paid_at.split(",")[0].split("/");
+      const paidDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      return paidDate >= monday;
+    });
+
+    if (alreadyPaidThisWeek) {
+      const confirm = window.confirm(
+        `Warning: ${emp.name} was already paid €${alreadyPaidThisWeek.amount.toFixed(2)} this week on ${alreadyPaidThisWeek.paid_at}. Do you still want to pay again?`,
+      );
+      if (!confirm) return;
+    }
+
     try {
       const res = await createCheckoutSession({
-        amount: calculatePay(emp),
+        amount: realPay,
         description: `Salary for ${emp.name}`,
         employee_name: emp.name,
         employee_role: emp.role,
         contract: emp.contract,
+        employee_id: emp.id,
       });
       window.location.href = res.data.url;
     } catch (err) {
       alert("Payment error");
+    }
+  };
+
+  const handleForceClockOut = async (emp) => {
+    if (!window.confirm(`Force clock out ${emp.name}?`)) return;
+    try {
+      await forceClockOut(emp.id);
+      alert(`${emp.name} has been clocked out`);
+      fetchEmployees();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Employee is not clocked in");
+    }
+  };
+
+  const handleResetHours = async (emp) => {
+    if (
+      !window.confirm(
+        `Remove today's clock hours for ${emp.name}? Only today's record will be deleted.`,
+      )
+    )
+      return;
+    try {
+      await resetTodayHours(emp.id);
+      alert(`Today's hours for ${emp.name} have been removed`);
+      fetchEmployees();
+    } catch (err) {
+      alert(err.response?.data?.detail || "No clock record found for today");
     }
   };
 
@@ -144,6 +247,8 @@ function Staff() {
               contract: "full-time",
               hourly_rate: "",
               hours_worked: "",
+              email: "",
+              password: "",
             });
           }}
         >
@@ -163,6 +268,32 @@ function Staff() {
                 placeholder="e.g. Marcus Dupont"
               />
             </div>
+            {!editingId && (
+              <>
+                <div>
+                  <label>Login Email</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
+                    placeholder="e.g. marcus@club.com"
+                  />
+                </div>
+                <div>
+                  <label>Login Password</label>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    placeholder="e.g. marcus123"
+                  />
+                </div>
+              </>
+            )}
             <div>
               <label>Role</label>
               <select
@@ -225,7 +356,8 @@ function Staff() {
               <th>Role</th>
               <th>Contract</th>
               <th>Hourly Rate</th>
-              <th>Hours</th>
+              <th>Real Hours</th>
+              <th>Real Pay</th>
               <th>Next Payment</th>
               <th>Actions</th>
             </tr>
@@ -233,7 +365,7 @@ function Staff() {
           <tbody>
             {employees.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center", color: "#888" }}>
+                <td colSpan="8" style={{ textAlign: "center", color: "#888" }}>
                   No employees yet.
                 </td>
               </tr>
@@ -246,9 +378,12 @@ function Staff() {
                     {emp.contract}
                   </td>
                   <td>€{emp.hourly_rate}/hr</td>
-                  <td>{emp.hours_worked}h</td>
+                  <td>{getRealHours(emp.name)}h</td>
+                  <td>€{getRealPay(emp)}</td>
                   <td>{getNextMonday()}</td>
-                  <td style={{ display: "flex", gap: "0.4rem" }}>
+                  <td
+                    style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}
+                  >
                     <button
                       className="btn btn-grey"
                       onClick={() => handleEdit(emp)}
@@ -260,6 +395,18 @@ function Staff() {
                       onClick={() => handlePay(emp)}
                     >
                       Pay
+                    </button>
+                    <button
+                      className="btn btn-grey"
+                      onClick={() => handleForceClockOut(emp)}
+                    >
+                      Stop Clock
+                    </button>
+                    <button
+                      className="btn btn-grey"
+                      onClick={() => handleResetHours(emp)}
+                    >
+                      Reset Hours
                     </button>
                     <button
                       className="btn btn-red"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getPayments, addPayment } from '../service/api'
+import { getPayments, addPayment, resetClockHours } from '../service/api'
 import { useLocation } from 'react-router-dom'
 import '../styles/payroll.css'
 
@@ -20,6 +20,7 @@ function Payroll() {
       const role = params.get('role')
       const contract = params.get('contract')
       const amount = parseFloat(params.get('amount'))
+      const employeeId = params.get('employee_id')
       const now = new Date().toLocaleString()
       if (name) {
         await addPayment({
@@ -29,6 +30,9 @@ function Payroll() {
           amount: amount,
           paid_at: now
         })
+        if (employeeId && employeeId !== '0') {
+          await resetClockHours(parseInt(employeeId))
+        }
         fetchPayments()
       }
       window.history.replaceState({}, '', '/payroll')
@@ -68,9 +72,7 @@ function Payroll() {
           <tbody>
             {payments.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: '#888' }}>
-                  No payments yet.
-                </td>
+                <td colSpan="5" style={{ textAlign: 'center', color: '#888' }}>No payments yet.</td>
               </tr>
             ) : (
               payments.map(p => (

@@ -1,0 +1,36 @@
+.emp-page {
+  padding: 1.2rem 1.5rem;
+}
+
+.emp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.emp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.emp-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  background: #fff;
+}
+
+.emp-card h3 {
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.emp-card p {
+  font-size: 0.88rem;
+  margin-bottom: 0.3rem;
+  color: #333;
+}

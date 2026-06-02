@@ -54,12 +54,15 @@ class UserOut(BaseModel):
     id: int
     email: str
     name: Optional[str] = None
+    role: Optional[str] = "employee"
     class Config:
         from_attributes = True
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: str
+    name: Optional[str] = None
 
 class PaymentOut(BaseModel):
     id: int
@@ -68,5 +71,16 @@ class PaymentOut(BaseModel):
     contract: str
     amount: float
     paid_at: str
+    class Config:
+        from_attributes = True
+
+class ClockInOut(BaseModel):
+    id: int
+    employee_id: int
+    employee_name: str
+    clock_in: Optional[str] = None
+    clock_out: Optional[str] = None
+    date: str
+    hours_worked: float
     class Config:
         from_attributes = True

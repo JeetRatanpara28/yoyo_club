@@ -13,6 +13,7 @@ class CheckoutData(BaseModel):
     employee_name: str = ""
     employee_role: str = ""
     contract: str = ""
+    employee_id: int = 0
 
 @router.post("/create-checkout-session")
 def create_checkout_session(data: CheckoutData):
@@ -29,7 +30,7 @@ def create_checkout_session(data: CheckoutData):
             "quantity": 1,
         }],
         mode="payment",
-        success_url=f"http://localhost:5173/payroll?payment=success&name={data.employee_name}&role={data.employee_role}&contract={data.contract}&amount={data.amount}",
+        success_url=f"http://localhost:5173/payroll?payment=success&name={data.employee_name}&role={data.employee_role}&contract={data.contract}&amount={data.amount}&employee_id={data.employee_id}",
         cancel_url="http://localhost:5173/staff?payment=cancelled",
     )
     return {"url": session.url}
