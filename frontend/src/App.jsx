@@ -36,14 +36,12 @@ function App() {
         <Route path="/*" element={
           <AdminRoute>
             <Navbar />
-            <div style={{ padding: '1.2rem 1.5rem' }}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/staff" element={<Staff />} />
-                <Route path="/payroll" element={<Payroll />} />
-                <Route path="/tickets" element={<Tickets />} />
-              </Routes>
-            </div>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/payroll" element={<Payroll />} />
+              <Route path="/tickets" element={<Tickets />} />
+            </Routes>
           </AdminRoute>
         } />
       </Routes>

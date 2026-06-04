@@ -1,20 +1,204 @@
-.staff-grid {
+.staff-page {
+  padding: 24px;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.staff-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111;
+}
+
+.staff-hire-btn {
+  font-size: 11px;
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.staff-cancel-btn {
+  font-size: 11px;
+  background: #888;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.staff-form {
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.staff-form-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  margin-bottom: 14px;
+}
+
+.staff-form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  margin-bottom: 0.8rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.form-wrapper {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin-bottom: 1rem;
+.staff-form-group label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 4px;
 }
 
-.form-actions {
-  margin-top: 0.8rem;
+.staff-form-group input,
+.staff-form-group select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111;
+  background: #fff;
 }
 
-.staff-table-wrapper {
-  margin-top: 0.5rem;
+.staff-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.staff-save-btn {
+  padding: 6px 16px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.staff-table-card {
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-table th {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  white-space: nowrap;
+}
+
+.staff-table td {
+  font-size: 13px;
+  color: #111;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f5f5f5;
+  white-space: nowrap;
+}
+
+.staff-table tr:last-child td {
+  border-bottom: none;
+}
+
+.staff-table tr:hover td {
+  background: #fafafa;
+}
+
+.role-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  color: #555;
+}
+
+.staff-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.btn-edit {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+}
+
+.btn-pay {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: none;
+  background: #eef0ff;
+  color: #4550d4;
+  cursor: pointer;
+}
+
+.btn-stop {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
+}
+
+.btn-reset {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
+}
+
+.btn-fire {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: none;
+  background: #fff0f0;
+  color: #d44545;
+  cursor: pointer;
+}
+
+.staff-no-data {
+  padding: 40px;
+  text-align: center;
+  color: #aaa;
+  font-size: 12px;
 }

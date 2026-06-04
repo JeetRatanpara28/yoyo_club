@@ -1,419 +1,317 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react'
 import {
-  getEmployees,
-  createEmployee,
-  deleteEmployee,
-  updateEmployee,
-  createCheckoutSession,
-  registerUser,
-  getAllClockSummary,
-  getPayments,
-  forceClockOut,
-  resetTodayHours
+  getEmployees, createEmployee, deleteEmployee, updateEmployee,
+  createCheckoutSession, registerUser, getAllClockSummary,
+  getPayments, forceClockOut, resetTodayHours, getActiveClockins
 } from '../service/api'
-import "../styles/staff.css";
+import '../styles/staff.css'
 
 function Staff() {
-  const [employees, setEmployees] = useState([]);
-  const [clockSummary, setClockSummary] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [payments, setPayments] = useState([]);
+  const [employees, setEmployees] = useState([])
+  const [clockSummary, setClockSummary] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [payments, setPayments] = useState([])
+  const [liveTimers, setLiveTimers] = useState({})
   const [form, setForm] = useState({
-    name: "",
-    role: "Bartender",
-    contract: "full-time",
-    hourly_rate: "",
-    hours_worked: "",
-    email: "",
-    password: "",
-  });
+    name: '', role: 'Bartender', contract: 'full-time',
+    hourly_rate: '', hours_worked: '', email: '', password: ''
+  })
+
+  useEffect(() => { fetchEmployees() }, [])
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    const interval = setInterval(() => {
+      setLiveTimers(prev => {
+        const next = { ...prev }
+        const now = new Date()
+        Object.keys(next).forEach(id => {
+          const start = next[id].start
+          const diff = Math.floor((now - start) / 1000)
+          const h = String(Math.floor(diff / 3600)).padStart(2, '0')
+          const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0')
+          const s = String(diff % 60).padStart(2, '0')
+          next[id] = { ...next[id], display: `${h}:${m}:${s}` }
+        })
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchEmployees = async () => {
     try {
-      const [empRes, summaryRes, payRes] = await Promise.all([
-        getEmployees(),
-        getAllClockSummary(),
-        getPayments(),
-      ]);
-      setEmployees(empRes.data);
-      setClockSummary(summaryRes.data);
-      setPayments(payRes.data);
+      const [empRes, summaryRes, payRes, activeRes] = await Promise.all([
+        getEmployees(), getAllClockSummary(), getPayments(), getActiveClockins()
+      ])
+      setEmployees(empRes.data)
+      setClockSummary(summaryRes.data)
+      setPayments(payRes.data)
+
+      const timers = {}
+      activeRes.data.forEach(record => {
+        const clockInDate = new Date()
+        const [h, m, s] = record.clock_in.split(':')
+        clockInDate.setHours(parseInt(h), parseInt(m), parseInt(s), 0)
+        timers[record.employee_id] = {
+          start: clockInDate,
+          display: '00:00:00'
+        }
+      })
+      setLiveTimers(timers)
     } catch (err) {
-      console.error(err);
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getRealHours = (name) => {
-    const found = clockSummary.find(
-      (s) => s.employee_name.toLowerCase() === name.toLowerCase(),
-    );
-    return found ? found.total_hours : 0;
-  };
+    const found = clockSummary.find(s => s.employee_name.toLowerCase() === name.toLowerCase())
+    return found ? found.total_hours : 0
+  }
 
   const getRealPay = (emp) => {
-    const hours = getRealHours(emp.name);
-    const base = hours * emp.hourly_rate;
-    if (emp.contract === "full-time") return (base * 1.1).toFixed(2);
-    if (emp.contract === "part-time") return base.toFixed(2);
-    if (emp.contract === "freelance") return (base * 0.8).toFixed(2);
-    return base.toFixed(2);
-  };
+    const hours = getRealHours(emp.name)
+    const base = hours * emp.hourly_rate
+    if (emp.contract === 'full-time') return (base * 1.1).toFixed(2)
+    if (emp.contract === 'part-time') return base.toFixed(2)
+    if (emp.contract === 'freelance') return (base * 0.8).toFixed(2)
+    return base.toFixed(2)
+  }
 
   const handleAdd = async () => {
-    if (
-      !editingId &&
-      (!form.name ||
-        !form.hourly_rate ||
-        !form.hours_worked ||
-        !form.email ||
-        !form.password)
-    ) {
-      alert("Please fill in all fields");
-      return;
+    if (!editingId && (!form.name || !form.hourly_rate || !form.hours_worked || !form.email || !form.password)) {
+      alert('Please fill in all fields')
+      return
     }
     if (editingId && (!form.name || !form.hourly_rate || !form.hours_worked)) {
-      alert("Please fill in all fields");
-      return;
+      alert('Please fill in all fields')
+      return
     }
     try {
       if (editingId) {
         await updateEmployee(editingId, {
-          name: form.name,
-          role: form.role,
-          contract: form.contract,
+          name: form.name, role: form.role, contract: form.contract,
           hourly_rate: parseFloat(form.hourly_rate),
-          hours_worked: parseFloat(form.hours_worked),
-        });
-        setEditingId(null);
+          hours_worked: parseFloat(form.hours_worked)
+        })
+        setEditingId(null)
       } else {
         await createEmployee({
-          name: form.name,
-          role: form.role,
-          contract: form.contract,
+          name: form.name, role: form.role, contract: form.contract,
           hourly_rate: parseFloat(form.hourly_rate),
-          hours_worked: parseFloat(form.hours_worked),
-        });
-        await registerUser({
-          email: form.email,
-          password: form.password,
-          name: form.name,
-        });
+          hours_worked: parseFloat(form.hours_worked)
+        })
+        await registerUser({ email: form.email, password: form.password, name: form.name })
       }
-      setForm({
-        name: "",
-        role: "Bartender",
-        contract: "full-time",
-        hourly_rate: "",
-        hours_worked: "",
-        email: "",
-        password: "",
-      });
-      setShowForm(false);
-      fetchEmployees();
+      setForm({ name: '', role: 'Bartender', contract: 'full-time', hourly_rate: '', hours_worked: '', email: '', password: '' })
+      setShowForm(false)
+      fetchEmployees()
     } catch (err) {
-      alert(err.response?.data?.detail || "Error creating employee");
+      alert(err.response?.data?.detail || 'Error creating employee')
     }
-  };
+  }
 
   const getNextMonday = () => {
-    const today = new Date();
-    const day = today.getDay();
-    const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7;
-    const nextMonday = new Date(today);
-    nextMonday.setDate(today.getDate() + daysUntilMonday);
-    return nextMonday.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+    const today = new Date()
+    const day = today.getDay()
+    const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7
+    const nextMonday = new Date(today)
+    nextMonday.setDate(today.getDate() + daysUntilMonday)
+    return nextMonday.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
 
   const handleEdit = (emp) => {
-    setEditingId(emp.id);
-    setForm({
-      name: emp.name,
-      role: emp.role,
-      contract: emp.contract,
-      hourly_rate: emp.hourly_rate,
-      hours_worked: emp.hours_worked,
-      email: "",
-      password: "",
-    });
-    setShowForm(true);
-  };
+    setEditingId(emp.id)
+    setForm({ name: emp.name, role: emp.role, contract: emp.contract, hourly_rate: emp.hourly_rate, hours_worked: emp.hours_worked, email: '', password: '' })
+    setShowForm(true)
+  }
 
   const handlePay = async (emp) => {
-    const realPay = parseFloat(getRealPay(emp));
-    if (realPay === 0) {
-      alert("No clock-in hours recorded for this employee yet");
-      return;
-    }
+    const realPay = parseFloat(getRealPay(emp))
+    if (realPay === 0) { alert('No clock-in hours recorded yet'); return }
 
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    monday.setHours(0, 0, 0, 0);
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+    monday.setHours(0, 0, 0, 0)
 
-    const alreadyPaidThisWeek = payments.find((p) => {
-      if (p.employee_name.toLowerCase() !== emp.name.toLowerCase())
-        return false;
-      const parts = p.paid_at.split(",")[0].split("/");
-      const paidDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-      return paidDate >= monday;
-    });
+    const alreadyPaid = payments.find(p => {
+      if (p.employee_name.toLowerCase() !== emp.name.toLowerCase()) return false
+      const parts = p.paid_at.split(',')[0].split('/')
+      const paidDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+      return paidDate >= monday
+    })
 
-    if (alreadyPaidThisWeek) {
-      const confirm = window.confirm(
-        `Warning: ${emp.name} was already paid €${alreadyPaidThisWeek.amount.toFixed(2)} this week on ${alreadyPaidThisWeek.paid_at}. Do you still want to pay again?`,
-      );
-      if (!confirm) return;
+    if (alreadyPaid) {
+      const ok = window.confirm(`Warning: ${emp.name} was already paid €${alreadyPaid.amount.toFixed(2)} this week. Pay again?`)
+      if (!ok) return
     }
 
     try {
       const res = await createCheckoutSession({
-        amount: realPay,
-        description: `Salary for ${emp.name}`,
-        employee_name: emp.name,
-        employee_role: emp.role,
-        contract: emp.contract,
-        employee_id: emp.id,
-      });
-      window.location.href = res.data.url;
+        amount: realPay, description: `Salary for ${emp.name}`,
+        employee_name: emp.name, employee_role: emp.role,
+        contract: emp.contract, employee_id: emp.id
+      })
+      window.location.href = res.data.url
     } catch (err) {
-      alert("Payment error");
+      alert('Payment error')
     }
-  };
+  }
 
   const handleForceClockOut = async (emp) => {
-    if (!window.confirm(`Force clock out ${emp.name}?`)) return;
+    if (!window.confirm(`Force clock out ${emp.name}?`)) return
     try {
-      await forceClockOut(emp.id);
-      alert(`${emp.name} has been clocked out`);
-      fetchEmployees();
+      await forceClockOut(emp.id)
+      alert(`${emp.name} has been clocked out`)
+      fetchEmployees()
     } catch (err) {
-      alert(err.response?.data?.detail || "Employee is not clocked in");
+      alert(err.response?.data?.detail || 'Employee is not clocked in')
     }
-  };
+  }
 
   const handleResetHours = async (emp) => {
-    if (
-      !window.confirm(
-        `Remove today's clock hours for ${emp.name}? Only today's record will be deleted.`,
-      )
-    )
-      return;
+    if (!window.confirm(`Remove today's clock hours for ${emp.name}?`)) return
     try {
-      await resetTodayHours(emp.id);
-      alert(`Today's hours for ${emp.name} have been removed`);
-      fetchEmployees();
+      await resetTodayHours(emp.id)
+      alert(`Today's hours for ${emp.name} have been removed`)
+      fetchEmployees()
     } catch (err) {
-      alert(err.response?.data?.detail || "No clock record found for today");
+      alert(err.response?.data?.detail || 'No clock record found for today')
     }
-  };
+  }
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Fire ${name}?`)) return;
+    if (!window.confirm(`Fire ${name}?`)) return
     try {
-      await deleteEmployee(id);
-      fetchEmployees();
+      await deleteEmployee(id)
+      fetchEmployees()
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <div className="staff-no-data">Loading...</div>
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h2>Staff</h2>
+    <div className="staff-page">
+      <div className="staff-header">
+        <div className="staff-title">Staff</div>
         <button
-          className={`btn ${showForm ? "btn-grey" : "btn-green"}`}
+          className={showForm ? 'staff-cancel-btn' : 'staff-hire-btn'}
           onClick={() => {
-            setShowForm(!showForm);
-            setEditingId(null);
-            setForm({
-              name: "",
-              role: "Bartender",
-              contract: "full-time",
-              hourly_rate: "",
-              hours_worked: "",
-              email: "",
-              password: "",
-            });
+            setShowForm(!showForm)
+            setEditingId(null)
+            setForm({ name: '', role: 'Bartender', contract: 'full-time', hourly_rate: '', hours_worked: '', email: '', password: '' })
           }}
         >
-          {showForm ? "Cancel" : "+ Hire"}
+          {showForm ? 'Cancel' : '+ Hire'}
         </button>
       </div>
 
       {showForm && (
-        <div className="form-wrapper">
-          <h3>{editingId ? "Edit Employee" : "New Employee"}</h3>
-          <div className="staff-grid">
-            <div>
-              <label>Full Name</label>
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Marcus Dupont"
-              />
+        <div className="staff-form">
+          <div className="staff-form-title">{editingId ? 'Edit employee' : 'New employee'}</div>
+          <div className="staff-form-grid">
+            <div className="staff-form-group">
+              <label>Full name</label>
+              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Marcus Dupont" />
             </div>
             {!editingId && (
               <>
-                <div>
-                  <label>Login Email</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    placeholder="e.g. marcus@club.com"
-                  />
+                <div className="staff-form-group">
+                  <label>Login email</label>
+                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="e.g. marcus@club.com" />
                 </div>
-                <div>
-                  <label>Login Password</label>
-                  <input
-                    type="password"
-                    value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
-                    placeholder="e.g. marcus123"
-                  />
+                <div className="staff-form-group">
+                  <label>Login password</label>
+                  <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="e.g. marcus123" />
                 </div>
               </>
             )}
-            <div>
+            <div className="staff-form-group">
               <label>Role</label>
-              <select
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-              >
+              <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
                 <option>Bartender</option>
                 <option>DJ</option>
                 <option>Bouncer</option>
                 <option>Staff</option>
               </select>
             </div>
-            <div>
+            <div className="staff-form-group">
               <label>Contract</label>
-              <select
-                value={form.contract}
-                onChange={(e) => setForm({ ...form, contract: e.target.value })}
-              >
+              <select value={form.contract} onChange={e => setForm({ ...form, contract: e.target.value })}>
                 <option value="full-time">Full-time</option>
                 <option value="part-time">Part-time</option>
                 <option value="freelance">Freelance</option>
               </select>
             </div>
-            <div>
-              <label>Hourly Rate (€)</label>
-              <input
-                type="number"
-                value={form.hourly_rate}
-                onChange={(e) =>
-                  setForm({ ...form, hourly_rate: e.target.value })
-                }
-                placeholder="e.g. 15"
-              />
+            <div className="staff-form-group">
+              <label>Hourly rate (€)</label>
+              <input type="number" value={form.hourly_rate} onChange={e => setForm({ ...form, hourly_rate: e.target.value })} placeholder="e.g. 15" />
             </div>
-            <div>
-              <label>Hours Worked</label>
-              <input
-                type="number"
-                value={form.hours_worked}
-                onChange={(e) =>
-                  setForm({ ...form, hours_worked: e.target.value })
-                }
-                placeholder="e.g. 35"
-              />
+            <div className="staff-form-group">
+              <label>Hours worked</label>
+              <input type="number" value={form.hours_worked} onChange={e => setForm({ ...form, hours_worked: e.target.value })} placeholder="e.g. 35" />
             </div>
           </div>
-          <div className="form-actions">
-            <button className="btn btn-green" onClick={handleAdd}>
-              {editingId ? "Save Changes" : "Confirm Hire"}
+          <div className="staff-form-actions">
+            <button className="staff-save-btn" onClick={handleAdd}>
+              {editingId ? 'Save changes' : 'Confirm hire'}
             </button>
           </div>
         </div>
       )}
 
-      <div className="staff-table-wrapper">
-        <table>
+      <div className="staff-table-card">
+        <table className="staff-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Role</th>
               <th>Contract</th>
-              <th>Hourly Rate</th>
-              <th>Real Hours</th>
-              <th>Real Pay</th>
-              <th>Next Payment</th>
+              <th>Rate</th>
+              <th>Session</th>
+              <th>Real hours</th>
+              <th>Real pay</th>
+              <th>Next payment</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
-              <tr>
-                <td colSpan="8" style={{ textAlign: "center", color: "#888" }}>
-                  No employees yet.
-                </td>
-              </tr>
+              <tr><td colSpan="9" className="staff-no-data">No employees yet.</td></tr>
             ) : (
-              employees.map((emp) => (
+              employees.map(emp => (
                 <tr key={emp.id}>
                   <td>{emp.name}</td>
-                  <td>{emp.role}</td>
-                  <td style={{ textTransform: "capitalize" }}>
-                    {emp.contract}
-                  </td>
+                  <td><span className="role-tag">{emp.role}</span></td>
+                  <td style={{ textTransform: 'capitalize' }}>{emp.contract}</td>
                   <td>€{emp.hourly_rate}/hr</td>
+                  <td>
+                    {liveTimers[emp.id] ? (
+                      <span style={{ fontSize: 12, color: '#2e7d32', fontWeight: 500, fontFamily: 'monospace' }}>
+                         {liveTimers[emp.id].display}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 12, color: '#aaa' }}>—</span>
+                    )}
+                  </td>
                   <td>{getRealHours(emp.name)}h</td>
                   <td>€{getRealPay(emp)}</td>
                   <td>{getNextMonday()}</td>
-                  <td
-                    style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}
-                  >
-                    <button
-                      className="btn btn-grey"
-                      onClick={() => handleEdit(emp)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-purple"
-                      onClick={() => handlePay(emp)}
-                    >
-                      Pay
-                    </button>
-                    <button
-                      className="btn btn-grey"
-                      onClick={() => handleForceClockOut(emp)}
-                    >
-                      Stop Clock
-                    </button>
-                    <button
-                      className="btn btn-grey"
-                      onClick={() => handleResetHours(emp)}
-                    >
-                      Reset Hours
-                    </button>
-                    <button
-                      className="btn btn-red"
-                      onClick={() => handleDelete(emp.id, emp.name)}
-                    >
-                      Fire
-                    </button>
+                  <td>
+                    <div className="staff-actions">
+                      <button className="btn-edit" onClick={() => handleEdit(emp)}>Edit</button>
+                      <button className="btn-pay" onClick={() => handlePay(emp)}>Pay</button>
+                      <button className="btn-stop" onClick={() => handleForceClockOut(emp)}>Stop clock</button>
+                      <button className="btn-reset" onClick={() => handleResetHours(emp)}>Reset</button>
+                      <button className="btn-fire" onClick={() => handleDelete(emp.id, emp.name)}>Fire</button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -422,7 +320,7 @@ function Staff() {
         </table>
       </div>
     </div>
-  );
+  )
 }
 
-export default Staff;
+export default Staff

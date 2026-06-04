@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginUser } from '../service/api'
 import { jwtDecode } from 'jwt-decode'
-import '../styles/login.css'
+import {
+  Box, Card, CardContent, TextField,
+  Button, Typography, Alert
+} from '@mui/material'
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -29,37 +32,49 @@ function Login() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login-box">
-        <h2>Yoyo's Club</h2>
-        <p style={{ textAlign: 'center', fontSize: '0.82rem', color: '#888', marginBottom: '1.5rem' }}>
-          Staff access only
-        </p>
-        <div className="form-group">
-          <label>Email</label>
-          <input
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+      <Card sx={{ width: 360, boxShadow: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" fontWeight={700} textAlign="center" mb={0.5}>
+            Yoyo's Club
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center" mb={3}>
+            Staff access only
+          </Typography>
+
+          <TextField
+            fullWidth
+            label="Email"
             type="email"
+            size="small"
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            placeholder="email@example.com"
+            sx={{ mb: 2 }}
           />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
+          <TextField
+            fullWidth
+            label="Password"
             type="password"
+            size="small"
             value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })}
-            placeholder="••••••••"
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+            sx={{ mb: 2 }}
           />
-        </div>
-        {error && <p className="error-msg">{error}</p>}
-        <button className="login-btn" onClick={handleSubmit}>Login</button>
-        <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#aaa', marginTop: '1.5rem' }}>
-          No account? Contact Yoyo to get access.
-        </p>
-      </div>
-    </div>
+
+          {error && <Alert severity="error" sx={{ mb: 2, py: 0 }}>{error}</Alert>}
+
+          <Button fullWidth variant="contained" onClick={handleSubmit}
+            sx={{ backgroundColor: '#1a1a2e', '&:hover': { backgroundColor: '#2d2d4e' } }}>
+            Login
+          </Button>
+
+          <Typography variant="caption" color="text.secondary" textAlign="center" display="block" mt={2}>
+            No account? Contact Yoyo to get access.
+          </Typography>
+        </CardContent>
+      </Card>
+    </Box>
   )
 }
 

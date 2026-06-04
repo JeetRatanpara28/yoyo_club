@@ -25,6 +25,15 @@ def get_all_summary(db: Session = Depends(get_db)):
         result.append({"employee_name": name, "total_hours": round(hours, 2)})
     return result
 
+@router.get("/active")
+def get_active_clockins(db: Session = Depends(get_db)):
+    today = datetime.now().strftime("%Y-%m-%d")
+    records = db.query(models.ClockIn).filter(
+        models.ClockIn.date == today,
+        models.ClockIn.clock_out == None
+    ).all()
+    return records
+
 @router.get("/summary/{employee_id}")
 def get_clock_summary(employee_id: int, db: Session = Depends(get_db)):
     records = db.query(models.ClockIn).filter(

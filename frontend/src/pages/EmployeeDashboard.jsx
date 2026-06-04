@@ -15,9 +15,7 @@ function EmployeeDashboard() {
   const name = localStorage.getItem('name')
   const userId = localStorage.getItem('userId')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  useEffect(() => { fetchData() }, [])
 
   const fetchData = async () => {
     try {
@@ -72,7 +70,7 @@ function EmployeeDashboard() {
   }
 
   const calculateRealPay = (emp) => {
-    if (!emp) return 0
+    if (!emp) return '0.00'
     const base = realHours * emp.hourly_rate
     if (emp.contract === 'full-time') return (base * 1.10).toFixed(2)
     if (emp.contract === 'part-time') return base.toFixed(2)
@@ -89,116 +87,145 @@ function EmployeeDashboard() {
     return nextMonday.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <div className="emp-no-data">Loading...</div>
 
   return (
     <div className="emp-page">
-      <div className="emp-header">
-        <span>👋 Hello, {name}</span>
-        <button className="btn btn-grey" onClick={handleLogout}>Logout</button>
-      </div>
 
-      <div className="emp-grid">
-        <div className="emp-card">
-          <h3>Clock In / Out</h3>
-          <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1rem' }}>
-            Status: <strong>{isClockedIn ? '🟢 Clocked In' : '🔴 Clocked Out'}</strong>
-          </p>
-          <button
-            className={`btn ${isClockedIn ? 'btn-red' : 'btn-green'}`}
-            onClick={isClockedIn ? handleClockOut : handleClockIn}
-            style={{ width: '100%', padding: '0.6rem' }}
-          >
-            {isClockedIn ? 'Clock Out' : 'Clock In'}
-          </button>
-        </div>
-
-        <div className="emp-card">
-          <h3>My Details</h3>
-          {employee ? (
-            <>
-              <p>Role: {employee.role}</p>
-              <p>Contract: {employee.contract}</p>
-              <p>Hourly Rate: €{employee.hourly_rate}/hr</p>
-              <p>Total Hours Worked: <strong>{realHours}h</strong></p>
-              <p>Est. Pay: <strong>€{calculateRealPay(employee)}</strong></p>
-            </>
-          ) : (
-            <p style={{ color: '#888' }}>No details found</p>
-          )}
-        </div>
-
-        <div className="emp-card">
-          <h3>Next Payment</h3>
-          {payments.length > 0 ? (
-            <p style={{ color: '#2e7d32', fontWeight: 'bold' }}>
-              Last paid: €{payments[0].amount.toFixed(2)} on {payments[0].paid_at}
-            </p>
-          ) : (
-            <p style={{ color: '#888' }}>Not paid yet</p>
-          )}
-          <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-            Next payment: <strong>{getNextMonday()}</strong>
-          </p>
+      <div className="emp-navbar">
+        <div className="emp-navbar-brand">🎵 Yoyo's Club</div>
+        <div className="emp-navbar-right">
+          <span className="emp-navbar-name">{name}</span>
+          <button className="emp-navbar-logout" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
-      <div className="emp-card" style={{ marginTop: '1rem' }}>
-        <h3>Clock In History</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Clock In</th>
-              <th>Clock Out</th>
-              <th>Hours</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clockins.length === 0 ? (
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', color: '#888' }}>No records yet.</td>
-              </tr>
+      <div className="emp-content">
+        <div className="emp-greeting">Hello, {name}</div>
+
+        <div className="emp-grid">
+
+          <div className="emp-card">
+            <div className="emp-card-title">Clock in / out</div>
+            <div className="emp-status">
+              <div className={`emp-status-dot ${isClockedIn ? 'green' : 'red'}`} />
+              {isClockedIn ? 'Clocked in' : 'Clocked out'}
+            </div>
+            <button
+              className={`emp-clock-btn ${isClockedIn ? 'out' : 'in'}`}
+              onClick={isClockedIn ? handleClockOut : handleClockIn}
+            >
+              {isClockedIn ? 'Clock out' : 'Clock in'}
+            </button>
+          </div>
+
+          <div className="emp-card">
+            <div className="emp-card-title">My details</div>
+            {employee ? (
+              <>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Role</span>
+                  <span className="emp-card-value">{employee.role}</span>
+                </div>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Contract</span>
+                  <span className="emp-card-value" style={{ textTransform: 'capitalize' }}>{employee.contract}</span>
+                </div>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Hourly rate</span>
+                  <span className="emp-card-value">€{employee.hourly_rate}/hr</span>
+                </div>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Hours worked</span>
+                  <span className="emp-card-value">{realHours}h</span>
+                </div>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Est. pay</span>
+                  <span className="emp-card-value green">€{calculateRealPay(employee)}</span>
+                </div>
+              </>
             ) : (
-              clockins.map(c => (
-                <tr key={c.id}>
-                  <td>{c.date}</td>
-                  <td>{c.clock_in}</td>
-                  <td>{c.clock_out || '—'}</td>
-                  <td>{c.hours_worked}h</td>
-                </tr>
-              ))
+              <div className="emp-no-data">No details found</div>
             )}
-          </tbody>
-        </table>
-      </div>
+          </div>
 
-      <div className="emp-card" style={{ marginTop: '1rem' }}>
-        <h3>Payment History</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Amount</th>
-              <th>Contract</th>
-              <th>Paid At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.length === 0 ? (
-              <tr>
-                <td colSpan="3" style={{ textAlign: 'center', color: '#888' }}>No payments yet.</td>
-              </tr>
+          <div className="emp-card">
+            <div className="emp-card-title">Next payment</div>
+            {payments.length > 0 ? (
+              <>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Last paid</span>
+                  <span className="emp-card-value green">€{payments[0].amount.toFixed(2)}</span>
+                </div>
+                <div className="emp-card-row">
+                  <span className="emp-card-label">Paid on</span>
+                  <span className="emp-card-value">{payments[0].paid_at}</span>
+                </div>
+              </>
             ) : (
-              payments.map(p => (
-                <tr key={p.id}>
-                  <td>€{p.amount.toFixed(2)}</td>
-                  <td style={{ textTransform: 'capitalize' }}>{p.contract}</td>
-                  <td>{p.paid_at}</td>
-                </tr>
-              ))
+              <div style={{ fontSize: 12, color: '#aaa', marginBottom: 10 }}>Not paid yet</div>
             )}
-          </tbody>
-        </table>
+            <div className="emp-card-row" style={{ marginTop: 8 }}>
+              <span className="emp-card-label">Next payment</span>
+              <span className="emp-card-value">{getNextMonday()}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="emp-table-card">
+          <div className="emp-table-header">Clock in history</div>
+          <table className="emp-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Clock in</th>
+                <th>Clock out</th>
+                <th>Hours</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clockins.length === 0 ? (
+                <tr><td colSpan="4" className="emp-no-data">No records yet.</td></tr>
+              ) : (
+                clockins.map(c => (
+                  <tr key={c.id}>
+                    <td>{c.date}</td>
+                    <td>{c.clock_in}</td>
+                    <td>{c.clock_out || '—'}</td>
+                    <td>{c.hours_worked}h</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="emp-table-card">
+          <div className="emp-table-header">Payment history</div>
+          <table className="emp-table">
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Contract</th>
+                <th>Paid at</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.length === 0 ? (
+                <tr><td colSpan="3" className="emp-no-data">No payments yet.</td></tr>
+              ) : (
+                payments.map(p => (
+                  <tr key={p.id}>
+                    <td className="emp-amount">€{p.amount.toFixed(2)}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{p.contract}</td>
+                    <td>{p.paid_at}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
